@@ -147,6 +147,32 @@ function getByClass(oParent,sClass){
 		return aResult;
 	}
 }
+function caseNum(json,index,aUl){
+	json[index]='';
+	aLi=aUl[index].children;
+	var aInp=aUl[index].getElementsByTagName('input');
+	for(var j=0;j<aLi.length;j++){
+		(function(iNow){
+			aLi[iNow].onclick=function(){
+				if(aInp[iNow].checked==true){
+					json[index]+=iNow;
+				}else{
+					var arr=json[index].split('');
+					var str='';
+					for(var i=0;i<arr.length;i++){
+						if(iNow==arr[i]){
+							arr.splice(i,1);
+						}	
+					}
+					for(var i=0;i<arr.length;i++){
+						str+=arr[i];
+					}
+					json[index]=str;
+				}
+			};
+		})(j);
+	}
+}
 window.onload=function(){
 	//后台传过来的答案
 	var answers=[
@@ -163,28 +189,18 @@ window.onload=function(){
 	var aUl=getByClass(document,'subject1-ul');
 	var oBtn=document.getElementById('btn');
 	var json={};
-	var arr=[]
+	//记录选择的答案
 	for(var i=0;i<aUl.length;i++){
 		(function(index){
-			if(index==6||index==7){//多选
-				var aLi=aUl[index].children;
-				var aInp=aUl[index].getElementsByTagName('input');
-				for(var j=0;j<aLi.length;j++){
-					(function(iNow){
-						aLi[iNow].onclick=function(){
-							if(aInp[iNow].checked==true){
-								arr.push(iNow);
-								json[index]=arr;
-							}else{
-								for(var i=0;i<arr.length;i++){
-									if(iNow==arr[i]){
-										arr.splice(i,1);	
-									}	
-								}
-								json[index]=arr;
-							}
-						};
-					})(j);
+			if(index>=6){//多选
+				switch(index){
+					case 6:
+						caseNum(json,index,aUl);
+						
+						break;
+					case 7:
+						caseNum(json,index,aUl);
+						break;
 				}
 			}else{//单选
 				var aLi=aUl[index].children;
@@ -201,10 +217,10 @@ window.onload=function(){
 	//提交
 	oBtn.onclick=function(){
 		for(var i in json){
-			if(json[i] instanceof Array){//多选
-				var str=answers[i][(parseInt(i)+1)];
+			if(json[i].length>1){//多选
+				var str=answers[i][(parseInt(i)+1)];//答案
 				var aLit=aUl[i].children;
-				json[i].sort(function(n1,n2){
+				json[i].split('').sort(function(n1,n2){
 					return n1-n2;	
 				});
 				for(var j=0;j<json[i].length;j++){
